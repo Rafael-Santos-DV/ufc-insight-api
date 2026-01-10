@@ -7,6 +7,6 @@ const fastify = Fastify({
 
 fastify.register(routes);
 
-fastify.listen({ port: 3000 }).then(() => {
+fastify.listen({ port: 3000, host: "0.0.0.0" }).then(() => {
   console.log("running in port 3000");
 });
