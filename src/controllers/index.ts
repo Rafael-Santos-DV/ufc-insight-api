@@ -9,7 +9,7 @@ export class UfcController {
   };
 
   public getEvents = async (request: FastifyRequest, reply: FastifyReply) => {
-    const response = await this.ufcService.events();
+    const response = await this.ufcService.getEvents();
     reply.send(response);
   };
 

@@ -6,42 +6,44 @@ export class UfcService {
 
   constructor() {}
 
-  public async events() {
-    const events = await fetch(this.api, {
-      method: "GET",
-    });
+  public async getEvents(): Promise<UfcInsightApiResponse[]> {
+    try {
+      const events = await fetch(this.api, {
+        method: "GET",
+      });
 
-    const {
-      result: { data },
-    } = (await events.json()) as UfcApiResponse;
+      const {
+        result: { data },
+      } = (await events.json()) as UfcApiResponse;
 
-    const customData: UfcInsightApiResponse[] = data.map((fighter) => ({
-      title: fighter.title,
-      seriesTitle: fighter.series_title[0],
-      label: fighter.label,
-      shortDescription: fighter.shortDescription,
-      description: fighter.description,
-      thumbnails: fighter.thumb,
-      type: fighter.type,
-      genre: fighter.genre,
-      streaming: fighter.live_streaming_url,
-      urls: {
-        pageUrl: fighter.url,
-        appUrl: fighter.app_url,
-        rawUrl: fighter.raw_url,
-      },
-      status: fighter.status,
-      brand: fighter.brand,
-      airDateISO: fighter.airdate_iso,
-      airDateTimestamp: fighter.airdate,
-      expiryDateISO: fighter.airdate_iso,
-      durationLabel: fighter.duration,
-      durationSeconds: fighter.duration_raw,
-      seasonNumber: fighter.season_number,
-      episodeNumber: fighter.episode_number,
-      contentId: fighter.content_id,
-    }));
-
-    return customData;
+      return data.map((event) => ({
+        title: event.title,
+        seriesTitle: event.series_title[0],
+        label: event.label,
+        shortDescription: event.shortDescription,
+        description: event.description,
+        thumbnails: event.thumb,
+        type: event.type,
+        genre: event.genre,
+        streaming: event.live_streaming_url,
+        urls: {
+          pageUrl: event.url,
+          appUrl: event.app_url,
+          rawUrl: event.raw_url,
+        },
+        status: event.status,
+        brand: event.brand,
+        airDateISO: event.airdate_iso,
+        airDateTimestamp: event.airdate,
+        expiryDateISO: event.airdate_iso,
+        durationLabel: event.duration,
+        durationSeconds: event.duration_raw,
+        seasonNumber: event.season_number,
+        episodeNumber: event.episode_number,
+        contentId: event.content_id,
+      }));
+    } catch (err) {
+      throw new Error("Failed to fetch UFC getEvents");
+    }
   }
 }
