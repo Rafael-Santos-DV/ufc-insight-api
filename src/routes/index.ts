@@ -7,4 +7,5 @@ const fighter = new UfcController(new UfcService());
 export function routes(fastify: FastifyInstance, options: any) {
   fastify.get("/", fighter.get);
   fastify.get("/events", fighter.getEvents);
+  fastify.get("/events/:eventId", fighter.getEvents);
 }

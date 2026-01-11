@@ -176,6 +176,10 @@ export interface UfcInsightApiResponse {
   expiryDateISO: string;
 
   thumbnails: UfcThumbnails;
+  streaming: {
+    streamingUrl: string;
+    liveStreamingUrl: string;
+  };
 
   urls: VideoURLs;
 }

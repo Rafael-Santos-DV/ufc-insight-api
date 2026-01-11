@@ -25,7 +25,10 @@ export class UfcService {
         thumbnails: event.thumb,
         type: event.type,
         genre: event.genre,
-        streaming: event.live_streaming_url,
+        streaming: {
+          streamingUrl: event.streaming_url,
+          liveStreamingUrl: event.live_streaming_url,
+        },
         urls: {
           pageUrl: event.url,
           appUrl: event.app_url,
