@@ -9,7 +9,13 @@ export class UfcController {
   };
 
   public getEvents = async (request: FastifyRequest, reply: FastifyReply) => {
-    const response = await this.ufcService.getEvents();
+    const params = request.query as { limit: number; skip: number };
+
+    const limit = params.limit ?? 10;
+    const skip = params.skip ?? 0;
+
+    const response = await this.ufcService.getEvents({ skip, limit });
+
     reply.send(response);
   };
 

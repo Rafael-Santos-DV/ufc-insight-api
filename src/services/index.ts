@@ -1,16 +1,26 @@
 import { UfcApiResponse, UfcInsightApiResponse } from "../types/index.js";
 
+type GetEventsParams = {
+  skip: number;
+  limit: number;
+};
 export class UfcService {
   private readonly api =
-    "https://www.paramountplus.com/shows/ufc-portugues/xhr/episodes/page/0/size/18/xs/0/season";
+    "https://www.paramountplus.com/shows/ufc-portugues/xhr/episodes";
 
   constructor() {}
 
-  public async getEvents(): Promise<UfcInsightApiResponse[]> {
+  public async getEvents({
+    limit,
+    skip,
+  }: GetEventsParams): Promise<UfcInsightApiResponse[]> {
     try {
-      const events = await fetch(this.api, {
-        method: "GET",
-      });
+      const events = await fetch(
+        `${this.api}/page/${skip}/size/${limit}/xs/0/season`,
+        {
+          method: "GET",
+        }
+      );
 
       const {
         result: { data },
