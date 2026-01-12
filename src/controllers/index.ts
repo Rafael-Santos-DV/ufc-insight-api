@@ -1,8 +1,11 @@
 import { FastifyRequest, FastifyReply } from "fastify";
 import { UfcService } from "../services/index.js";
+import { FastifyRedis } from "@fastify/redis";
 
 export class UfcController {
-  constructor(private ufcService: UfcService) {}
+  constructor(
+    private ufcService: UfcService // private fastifyRedis: FastifyRedis
+  ) {}
 
   public get = (request: FastifyRequest, reply: FastifyReply) => {
     reply.send({ status: 200, message: "tudo ok" });
@@ -19,11 +22,13 @@ export class UfcController {
     reply.send(response);
   };
 
-  public getFight = async () => {
-    return "fight";
-  };
+  public getEvent = async (request: FastifyRequest, reply: FastifyReply) => {
+    const { eventName } = request.params as { eventName: string };
 
-  public getFights = async () => {
-    return "fights";
+    if (!eventName) throw new Error("Missing eventId params => getEvent");
+
+    const response = await this.ufcService.getEvent(eventName);
+
+    reply.send(response);
   };
 }
