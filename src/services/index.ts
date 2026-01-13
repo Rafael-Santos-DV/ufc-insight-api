@@ -61,60 +61,79 @@ export class UfcService {
     }
   }
 
-  public getEvent = async (eventName: string) => {
-    let events: UfcInsightApiResponse[] | null = null;
+  public getEvent = async (eventName = "") => {
+    const CACHE_KEY = "events:all";
 
-    events =
-      JSON.parse((await this.fastifyRedis.get("events:all")) as string) ?? null;
+    const cacheData = await this.fastifyRedis.get(CACHE_KEY);
 
-    if (!events) {
-      console.log("new fetch");
-      const response = await fetch(
-        `${this.api}/page/${0}/size/${100}/xs/0/season`,
-        {
-          method: "GET",
-        }
+    if (cacheData) {
+      console.log("Serving from cache");
+      const events: UfcInsightApiResponse[] = JSON.parse(cacheData);
+      return events.filter((event) =>
+        event.title.toLocaleLowerCase().includes(eventName.toLocaleLowerCase())
       );
-
-      const {
-        result: { data },
-      } = (await response.json()) as UfcApiResponse;
-
-      events = data.map((event) => ({
-        title: event.title,
-        seriesTitle: event.series_title[0],
-        label: event.label,
-        shortDescription: event.shortDescription,
-        description: event.description,
-        thumbnails: event.thumb,
-        type: event.type,
-        genre: event.genre,
-        streaming: {
-          streamingUrl: event.streaming_url,
-          liveStreamingUrl: event.live_streaming_url,
-        },
-        urls: {
-          pageUrl: event.url,
-          appUrl: event.app_url,
-          rawUrl: event.raw_url,
-        },
-        status: event.status,
-        brand: event.brand,
-        airDateISO: event.airdate_iso,
-        airDateTimestamp: event.airdate,
-        expiryDateISO: event.airdate_iso,
-        durationLabel: event.duration,
-        durationSeconds: event.duration_raw,
-        seasonNumber: event.season_number,
-        episodeNumber: event.episode_number,
-        contentId: event.content_id,
-      }));
-
-      await this.fastifyRedis.set("events:all", JSON.stringify(events));
     }
 
-    console.log("events cache");
+    console.log("Cache miss: New fetch started");
 
-    return events;
+    const pages = [0, 1, 2, 3];
+
+    const fetchPromises = pages.map((page) =>
+      fetch(`${this.api}/page/${page}/size/${50}/xs/0/season`).then((res) =>
+        res.json()
+      )
+    ) as Promise<UfcApiResponse>[];
+
+    const responses: UfcApiResponse[] = await Promise.all(fetchPromises);
+
+    const allRawData = responses.flatMap((res) => res.result.data);
+
+    console.log({
+      paginas: responses
+        .map((r, i) => `Pág ${i}: ${r.result.data.length}`)
+        .join(", "),
+      total: allRawData.length,
+    });
+
+    const events: UfcInsightApiResponse[] = allRawData.map((event) => ({
+      title: event.title,
+      seriesTitle: event.series_title[0],
+      label: event.label,
+      shortDescription: event.shortDescription,
+      description: event.description,
+      thumbnails: event.thumb,
+      type: event.type,
+      genre: event.genre,
+      streaming: {
+        streamingUrl: event.streaming_url,
+        liveStreamingUrl: event.live_streaming_url,
+      },
+      urls: {
+        pageUrl: event.url,
+        appUrl: event.app_url,
+        rawUrl: event.raw_url,
+      },
+      status: event.status,
+      brand: event.brand,
+      airDateISO: event.airdate_iso,
+      airDateTimestamp: event.airdate,
+      expiryDateISO: event.airdate_iso,
+      durationLabel: event.duration,
+      durationSeconds: event.duration_raw,
+      seasonNumber: event.season_number,
+      episodeNumber: event.episode_number,
+      contentId: event.content_id,
+    }));
+
+    await this.fastifyRedis.set(
+      "events:all",
+      JSON.stringify(events),
+      "EX",
+      3600
+    );
+
+    return events.filter((event) =>
+      event.title.toLocaleLowerCase().includes(eventName.toLocaleLowerCase())
+    );
   };
 }
