@@ -1,8 +1,8 @@
 import Fastify from "fastify";
-import { routes } from "./src/routes/index.js";
+import { routes } from "./routes/index.js";
 import fastifyRedis from "@fastify/redis";
 import fastifyEnv from "@fastify/env";
-import { schema } from "./src/lib/env.js";
+import { schema } from "./lib/env.js";
 
 const fastify = Fastify({
   logger: true,
