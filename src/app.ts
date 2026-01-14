@@ -3,6 +3,7 @@ import { routes } from "./routes/index.js";
 import fastifyRedis from "@fastify/redis";
 import fastifyEnv from "@fastify/env";
 import { schema } from "./lib/env.js";
+import path from "node:path";
 
 const fastify = Fastify({
   logger: true,
@@ -11,11 +12,12 @@ const fastify = Fastify({
 
 async function start() {
   try {
+    console.log("path: ", path.resolve(process.cwd(), ".env"));
     await fastify.register(fastifyEnv, {
       confKey: "config",
       schema,
       dotenv: {
-        path: `${process.cwd()}/.env`,
+        path: path.resolve(process.cwd(), ".env"),
         debug: true,
       },
     });
