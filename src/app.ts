@@ -28,7 +28,9 @@ async function start() {
     });
     await fastify.register(routes);
 
-    await fastify.listen({ port: 3000, host: "0.0.0.0" });
+    const port = Number(process.env.PORT) || 3000;
+    await fastify.listen({ port, host: "0.0.0.0" });
+
     console.log("running in port 3000");
   } catch (err: any) {
     throw new Error(err);
