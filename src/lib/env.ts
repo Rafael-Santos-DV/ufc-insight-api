@@ -5,7 +5,7 @@ export const schema = {
     REDIS_USER: { type: "string", default: "default" },
     REDIS_HOST: { type: "string" },
     REDIS_PASS: { type: "string" },
-    REDIS_PORT: { type: "number" },
+    REDIS_PORT: { type: "number", default: 3000 },
     NODE_ENV: {
       type: "string",
       default: "development",
