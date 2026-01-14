@@ -11,12 +11,15 @@ const fastify = Fastify({
 
 async function start() {
   try {
+    console.log(process.env);
     await fastify.register(fastifyEnv, {
       confKey: "config",
       schema,
       dotenv: true,
       data: process.env,
     });
+
+    await fastify.after();
 
     await fastify.register(fastifyRedis, {
       username: fastify.config.REDIS_USER,
@@ -27,7 +30,7 @@ async function start() {
     await fastify.register(routes);
 
     const port = Number(process.env.PORT) || 3000;
-    await fastify.listen({ port, host: "0.0.0.0" });
+    await fastify.listen({ port, host: "::" });
 
     console.log("running in port 3000");
   } catch (err: any) {
