@@ -20,7 +20,7 @@ export class UfcService {
         `${this.api}/page/${skip}/size/${limit}/xs/0/season`,
         {
           method: "GET",
-        }
+        },
       );
 
       const {
@@ -70,7 +70,7 @@ export class UfcService {
       console.log("Serving from cache");
       const events: UfcInsightApiResponse[] = JSON.parse(cacheData);
       return events.filter((event) =>
-        event.title.toLocaleLowerCase().includes(eventName.toLocaleLowerCase())
+        event.title.toLocaleLowerCase().includes(eventName.toLocaleLowerCase()),
       );
     }
 
@@ -80,8 +80,8 @@ export class UfcService {
 
     const fetchPromises = pages.map((page) =>
       fetch(`${this.api}/page/${page}/size/${50}/xs/0/season`).then((res) =>
-        res.json()
-      )
+        res.json(),
+      ),
     ) as Promise<UfcApiResponse>[];
 
     const responses: UfcApiResponse[] = await Promise.all(fetchPromises);
@@ -129,11 +129,15 @@ export class UfcService {
       "events:all",
       JSON.stringify(events),
       "EX",
-      3600
+      3600,
     );
 
+    if (!eventName) {
+      return events;
+    }
+
     return events.filter((event) =>
-      event.title.toLocaleLowerCase().includes(eventName.toLocaleLowerCase())
+      event.title.toLocaleLowerCase().includes(eventName.toLocaleLowerCase()),
     );
   };
 }

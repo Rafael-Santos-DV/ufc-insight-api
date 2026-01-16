@@ -4,7 +4,7 @@ import { FastifyRedis } from "@fastify/redis";
 
 export class UfcController {
   constructor(
-    private ufcService: UfcService // private fastifyRedis: FastifyRedis
+    private ufcService: UfcService, // private fastifyRedis: FastifyRedis
   ) {}
 
   public get = (request: FastifyRequest, reply: FastifyReply) => {
@@ -25,7 +25,7 @@ export class UfcController {
   public getEvent = async (request: FastifyRequest, reply: FastifyReply) => {
     const { eventName } = request.params as { eventName: string };
 
-    if (!eventName) throw new Error("Missing eventId params => getEvent");
+    // if (!eventName) throw new Error("Missing eventId params => getEvent");
 
     const response = await this.ufcService.getEvent(eventName);
 
