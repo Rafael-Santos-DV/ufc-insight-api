@@ -8,7 +8,7 @@ type GetEventsParams = {
 type APIS = {
   url: string;
   pages: number;
-  season?: Array<number>;
+  season?: Array<[number, number]>;
 }[];
 
 export class UfcService {
@@ -87,25 +87,18 @@ export class UfcService {
 
     console.log("Cache miss: New fetch started");
 
-    const fetchPromises = this.apis.map((api) => {
+    const fetchPromises = this.apis.flatMap((api) => {
       if (api.season) {
-        return api.season.map(async (season) => {
-          try {
+        return api.season.flatMap(([season, totalPages]) => {
+          return Array.from({ length: totalPages }).map(async (_, index) => {
             const res = await fetch(
-              `${api.url}/page/${0}/size/${50}/xs/0/season/${season}`,
+              `${api.url}/page/${index}/size/${50}/xs/0/season/${season}`,
             );
-
             if (!res.ok) throw new Error(`Erro na API: ${res.status}`);
 
-            return await res.json();
-          } catch (error) {
-            console.error(
-              `Falha ao buscar ${api.url} temporada ${season}:`,
-              error,
-            );
-            return [];
-          }
-        }) as Promise<UfcApiResponse>[];
+            return (await res.json()) as UfcApiResponse;
+          });
+        });
       }
 
       return Array.from({ length: api.pages }).map(async (_, page) => {
@@ -124,9 +117,7 @@ export class UfcService {
       }) as Promise<UfcApiResponse>[];
     });
 
-    const responses: UfcApiResponse[] = await Promise.all(
-      fetchPromises.flatMap((item) => item),
-    );
+    const responses = await Promise.all(fetchPromises.flat());
 
     const allRawData = responses.flatMap((res) => res.result.data);
 
