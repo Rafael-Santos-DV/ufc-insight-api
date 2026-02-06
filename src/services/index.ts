@@ -8,6 +8,7 @@ type GetEventsParams = {
 type APIS = {
   url: string;
   pages: number;
+  season?: Array<number>;
 }[];
 
 export class UfcService {
@@ -87,6 +88,26 @@ export class UfcService {
     console.log("Cache miss: New fetch started");
 
     const fetchPromises = this.apis.map((api) => {
+      if (api.season) {
+        return api.season.map(async (season) => {
+          try {
+            const res = await fetch(
+              `${api.url}/page/${0}/size/${50}/xs/0/season/${season}`,
+            );
+
+            if (!res.ok) throw new Error(`Erro na API: ${res.status}`);
+
+            return await res.json();
+          } catch (error) {
+            console.error(
+              `Falha ao buscar ${api.url} temporada ${season}:`,
+              error,
+            );
+            return [];
+          }
+        }) as Promise<UfcApiResponse>[];
+      }
+
       return Array.from({ length: api.pages }).map(async (_, page) => {
         try {
           const res = await fetch(
