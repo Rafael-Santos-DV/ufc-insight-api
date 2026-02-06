@@ -8,6 +8,16 @@ type GetEventsParams = {
 export class UfcService {
   private readonly api =
     "https://www.paramountplus.com/shows/ufc-portugues/xhr/episodes";
+  private readonly apis = [
+    {
+      url: "https://www.paramountplus.com/shows/ufc-portugues/xhr/episodes",
+      pages: Array.from({ length: 15 }, (_, i) => i),
+    },
+    {
+      url: "https://www.paramountplus.com/shows/ufc/video/xhr/episodes",
+      pages: Array.from({ length: 13 }, (_, i) => i),
+    },
+  ];
 
   constructor(private fastifyRedis: FastifyRedis) {}
 
@@ -62,6 +72,8 @@ export class UfcService {
   }
 
   public getEvent = async (eventName = "") => {
+    console.time("MeuProcesso");
+
     const CACHE_KEY = "events:all";
 
     const cacheData = await this.fastifyRedis.get(CACHE_KEY);
@@ -69,6 +81,7 @@ export class UfcService {
     if (cacheData) {
       console.log("Serving from cache");
       const events: UfcInsightApiResponse[] = JSON.parse(cacheData);
+
       return events.filter((event) =>
         event.title.toLocaleLowerCase().includes(eventName.toLocaleLowerCase()),
       );
@@ -76,15 +89,26 @@ export class UfcService {
 
     console.log("Cache miss: New fetch started");
 
-    const pages = [0, 1, 2, 3];
+    const fetchPromises = this.apis.map((api) => {
+      return api.pages.map(async (page) => {
+        try {
+          const res = await fetch(
+            `${api.url}/page/${page}/size/${50}/xs/0/season`,
+          );
 
-    const fetchPromises = pages.map((page) =>
-      fetch(`${this.api}/page/${page}/size/${50}/xs/0/season`).then((res) =>
-        res.json(),
-      ),
-    ) as Promise<UfcApiResponse>[];
+          if (!res.ok) throw new Error(`Erro na API: ${res.status}`);
 
-    const responses: UfcApiResponse[] = await Promise.all(fetchPromises);
+          return await res.json();
+        } catch (error) {
+          console.error(`Falha ao buscar ${api.url} página ${page}:`, error);
+          return [];
+        }
+      }) as Promise<UfcApiResponse>[];
+    });
+
+    const responses: UfcApiResponse[] = await Promise.all(
+      fetchPromises.flatMap((item) => item),
+    );
 
     const allRawData = responses.flatMap((res) => res.result.data);
 

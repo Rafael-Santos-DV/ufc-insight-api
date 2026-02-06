@@ -29,6 +29,7 @@ export class UfcController {
 
     const response = await this.ufcService.getEvent(eventName);
 
+    console.timeEnd("MeuProcesso");
     reply.send(response);
   };
 }

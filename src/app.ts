@@ -11,7 +11,6 @@ const fastify = Fastify({
 
 async function start() {
   try {
-    console.log(process.env);
     await fastify.register(fastifyEnv, {
       confKey: "config",
       schema,
