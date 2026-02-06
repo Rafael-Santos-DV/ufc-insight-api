@@ -5,19 +5,16 @@ type GetEventsParams = {
   skip: number;
   limit: number;
 };
+type APIS = {
+  url: string;
+  pages: number;
+}[];
+
 export class UfcService {
   private readonly api =
     "https://www.paramountplus.com/shows/ufc-portugues/xhr/episodes";
-  private readonly apis = [
-    {
-      url: "https://www.paramountplus.com/shows/ufc-portugues/xhr/episodes",
-      pages: Array.from({ length: 15 }, (_, i) => i),
-    },
-    {
-      url: "https://www.paramountplus.com/shows/ufc/video/xhr/episodes",
-      pages: Array.from({ length: 13 }, (_, i) => i),
-    },
-  ];
+
+  private readonly apis = JSON.parse(process.env.APIS as string) as APIS;
 
   constructor(private fastifyRedis: FastifyRedis) {}
 
@@ -90,7 +87,7 @@ export class UfcService {
     console.log("Cache miss: New fetch started");
 
     const fetchPromises = this.apis.map((api) => {
-      return api.pages.map(async (page) => {
+      return Array.from({ length: api.pages }).map(async (_, page) => {
         try {
           const res = await fetch(
             `${api.url}/page/${page}/size/${50}/xs/0/season`,
